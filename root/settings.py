@@ -99,7 +99,7 @@ MIDDLEWARE = [
     'django_browser_reload.middleware.BrowserReloadMiddleware',
 
     # YOUR MIDDLEWARES
-    # "allauth.account.middleware.AccountMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # settings.py

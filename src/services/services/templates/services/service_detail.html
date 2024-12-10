@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block subtitle %}
+    {{ user.username }}
+{% endblock %}
+
+
+{% block page_heading %} Service Detail {% endblock %}
+
+{% block content %}
+
+
+    <div class="row">
+        <div class="col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="fw-semibold">{{ object.title }}</h5>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <th scope="col">Provider</th>
+                                <td scope="col">{{ object.provider }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Category:</th>
+                                <td>{{ object.category }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Price</th>
+                                <td>{{ object.price }}</td>
+                            </tr>
+                            {% if object.discount > 0 %}
+                                <tr>
+                                    <th scope="row">Discounted Price</th>
+                                    <td class="text-success">{{ object.get_discounted_price }}
+                                        ({{ object.discount }}%)
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <th scope="row">Service Type</th>
+                                <td><span class="badge badge-soft-success">{{ object.service_type }}</span></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="hstack gap-2">
+                        <button class="btn btn-success w-100">Apply Now</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!--end col-->
+        <div class="col-xl-9">
+            <div class="card">
+                <div class="card-body border-bottom">
+                    <div class="d-flex">
+                        <img class="" src="{{ object.thumbnail.url }}" alt="" height="50">
+                        <div class="flex-grow-1" style="margin-left: 6px">
+                            <h5 class="fw-semibold m-0">{{ object.title }}</h5>
+                            <ul class="list-unstyled hstack gap-2 mb-0">
+                                <li>
+                                    <i class="bx bx-user"></i> <span class="text-muted">{{ object.provider }}</span>
+                                </li>
+                                <li>
+                                    <i class="bx bx-building-house"></i> <span
+                                        class="text-muted">Category: {{ object.category }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-semibold mb-3">Description</h5>
+                    <p class="text-muted">{{ object.description }}</p>
+                    <br>
+
+                    <h5 class="fw-semibold mb-3">Service Locations:</h5>
+                    <ul class="vstack gap-3">
+                        {% for location in service.location.all %}
+                            <i class="bx bx-map"></i> {{ location.address }} {{ location.city }},
+                            {{ location.reigon }}{{ location.country }}
+                            <br>
+                        {% empty %}
+                            <p class="text-danger">No Locations for this service have been added.</p>
+                        {% endfor %}
+                    </ul>
+
+
+                    <div class="card-body">
+                        <h4 class="card-title">Availability for {{ object.title }}</h4>
+                        <p class="card-title-desc">See all availability slots for this service below.</p>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm m-0">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Day of Week</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Timezone</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for slot in availability_slots %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ slot.day_of_week }}</td>
+                                        <td><span class="badge badge-soft-success">{{ slot.start_time }}</span></td>
+                                        <td><span class="badge badge-soft-danger">{{ slot.end_time }}</span></td>
+                                        <td>{{ slot.timezone }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="">
+                                            <p class="text-danger">No Time Slots for this service have been added.</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <h4 class="card-title">Service Images</h4></h4>
+                                <p class="card-title-desc">Add captions to your slides easily with the <code>.carousel-caption</code>
+                                    element within any <code>.carousel-item</code>.</p>
+
+                                <div class="row d-flex">
+                                    {% for object in service.images.all %}
+
+                                        <img src="{{ object.image.url }}" alt="..."
+                                             class="d-block img-fluid m-2"
+                                             style="border-radius: 10px; object-fit: cover; width: 200px; height: 200px;">
+                                    {% empty %}
+                                        <p class="text-danger">No Images for this service have been added.</p>
+                                    {% endfor %}
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- end col -->
+
+        </div>
+    </div>
+    </div><!--end col-->
+    </div>
+
+{% endblock %}
+
+
+
+
+
+
+
+

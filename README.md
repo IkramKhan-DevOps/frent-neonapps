@@ -142,7 +142,7 @@ cd frend-neonapps
 
 ```bash
 pip install -r requirements.txt
-python manage.py makemigrations core users whisper
+python manage.py makemigrations core users whisper wallet
 python manage.py migrate
 py manage.py runserver
 ```
