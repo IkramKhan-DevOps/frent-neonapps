@@ -120,7 +120,7 @@ class Service(models.Model):
         super().save(*args, **kwargs)
 
     def get_discounted_price(self):
-        return self.price - (self.price * (self.discount / 100))
+        return round(self.price - (self.price * (self.discount / 100)), 2)
 
     def get_total_rating(self):
         reviews = self.reviews.filter(is_active=True)

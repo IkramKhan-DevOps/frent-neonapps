@@ -32,7 +32,8 @@
                         <div class="card-body">
                             <div class="mb-4">
                                 <img class="rounded-circle avatar-sm"
-                                     src="{{ user.profile_image|image_or_placeholder }}"
+                                     src="
+                                             {% if user.profile_image %}{{ user.profile_image.url }}{% else %}https://avatar.iran.liara.run/public?name={{ user.username|default:'User' }}{% endif %}"
                                      alt="">
                             </div>
                             <h5 class="font-size-15 mb-1"><a href="{% url 'users:user-detail' user.id %}"
@@ -84,14 +85,11 @@
         $(document).ready(function () {
 
             $('label').hide();
-            $('input').addClass('form-control');
+            $('input').addClass('form-control ms-3 ps-3');
             $('select').addClass('form-control');
 
         });
     </script>
-
-
-
 {% endblock %}
 
 {% block js %}

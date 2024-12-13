@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block subtitle %}
+    {{ user.username }}
+{% endblock %}
+
+{% block page_heading %} Service Detail {% endblock %}
+
+{% block content %}
+
+
+    <div class="row">
+        <div class="col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="fw-semibold">{{ object.title }}</h5>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <th scope="col">Provider</th>
+                                <td>{{ object.provider }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Category:</th>
+                                <td>{{ object.category }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Price</th>
+                                <td>{{ object.price }}</td>
+                            </tr>
+                            {% if object.discount > 0 %}
+                                <tr>
+                                    <th scope="row">Discounted Price</th>
+                                    <td class="text-success">{{ object.get_discounted_price }}
+                                        ({{ object.discount }}%)
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <th scope="row">Service Type</th>
+                                <td><span class="badge badge-soft-success">{{ object.service_type }}</span></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="hstack gap-2">
+                        <a class="btn btn-outline-success w-100"
+                           href="{% url 'users:user-detail' object.provider.pk %}">
+                            {{ object.provider.username }} Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+
+                <div class="card-body">
+                    <h5 class="card-title">Reviews</h5>
+                    {% for review in object.reviews.all %}
+                        <hr>
+                        <div class="mt-3 d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="row d-flex">
+                                    <div class="col-md-6">
+                                        <h5 class="mb-1 text-truncate">
+                                            {% if review.reviewer.profile_image %}
+                                                <img style="border-radius: 100%;" height='20'
+                                                     src="{{ review.reviewer.profile_image.url }}" alt="">
+                                            {% else %}
+                                                <img height="20"
+                                                     src="https://avatar.iran.liara.run/public?name={{ review.reviewer.username|default:'User' }}"
+                                                     alt="">
+                                            {% endif %}
+                                            <a href="javascript: void(0);" class="text-dark">
+                                                {{ review.reviewer }} <small
+                                                    class="text-muted">({{ review.reviewer.user_type }})</small>
+                                            </a>
+                                        </h5>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class=" float-right badge bg-success text-white font-size-11">
+                                            <i class="bx bxs-star me-2"></i>{{ review.rating }}.0
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mt-1">
+                                    {{ review.comment }}<br>
+                                    <small class="float-right">- {{ review.created_at }}</small>
+
+                                </p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-danger">No Reviews found</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div><!--end    col-->
+        <div class="col-xl-9">
+            <div class="card">
+                <div class="card-body border-bottom">
+                    <div class="d-flex">
+                        {% if object.thumbnail %}
+                            <img height="65" class="mb-4" src="{{ object.thumbnail.url }}" alt="">
+                        {% else %}
+                            <img height="65" style="border-radius: 10%;"
+                                 src="https://api.dicebear.com/9.x/icons/svg?seed={{ object.title|default:'Placeholder' }}"
+                                 alt="Service Placeholder"/>
+                        {% endif %}
+                        <div class="flex-grow-1" style="margin-left: 6px">
+                            <h5 class="fw-semibold m-0">{{ object.title }}</h5>
+                            <ul class="list-unstyled hstack gap-2 mb-0">
+                                <li>
+                                    <i class="bx bx-user"></i> <span class="text-muted">{{ object.provider }}</span>
+                                </li>
+                                <li>
+                                    <i class="bx bx-building-house"></i> <span
+                                        class="text-muted">Category: {{ object.category }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-semibold mb-3">Description</h5>
+                    <p class="text-muted">{{ object.description }}</p>
+                    <br>
+
+                    <h5 class="fw-semibold mb-3">Service Locations:</h5>
+                    <ul class="vstack gap-3">
+                        {% for location in service.location.all %}
+                            <i class="bx bx-map"></i> {{ location.address }} {{ location.city }},
+                            {{ location.reigon }}{{ location.country }}
+                            <br>
+                        {% empty %}
+                            <p class="text-danger">No Locations for this service have been added.</p>
+                        {% endfor %}
+                    </ul>
+
+
+                    <div class="card-body">
+                        <h4 class="card-title">Availability for {{ object.title }}</h4>
+                        <p class="card-title-desc">See all availability slots for this service below.</p>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm m-0">
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Day of Week</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Timezone</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for slot in availability_slots %}
+                                    <tr>
+                                        <th scope="row">{{ forloop.counter }}</th>
+                                        <td>{{ slot.day_of_week }}</td>
+                                        <td><span class="badge badge-soft-success">{{ slot.start_time }}</span></td>
+                                        <td><span class="badge badge-soft-danger">{{ slot.end_time }}</span></td>
+                                        <td>{{ slot.timezone }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="">
+                                            <p class="text-danger">No Time Slots for this service have been added.</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <h4 class="card-title">Service Images</h4>
+                                <p class="card-title-desc">These are the imags for a service that can be added for one or more services <code>.this service</code>
+                                    </p>
+
+                                <div class="row d-flex">
+                                    {% for object in service.images.all %}
+
+                                        <img src="{{ object.image.url }}" alt="..."
+                                             class="d-block img-fluid m-2"
+                                             style="border-radius: 10px; object-fit: cover; width: 200px; height: 200px;">
+                                    {% empty %}
+                                        <p class="text-danger">No Images for this service have been added.</p>
+                                    {% endfor %}
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- end col -->
+            <div class="card">
+                <div class="container mt-4">
+                    <h5 class="fw-semibold m-3 ms-5">Service Requests</h5>
+                    <div class="col-12">
+                        <table class="table table-hover">
+                            <thead class="">
+                            <tr>
+                                <th scope="col">Provider</th>
+                                <th scope="col">Seeker</th>
+                                <th scope="col">Service</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Payment Method</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Currency</th>
+                                <th scope="col">Paid</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for obj in object.requests.all %}
+                                <tr>
+                                    <td>{{ obj.service.provider }}</td>
+                                    <td>{{ obj.seeker }}</td>
+                                    <td>{{ obj.service.title }}</td>
+                                    <td><span class="text-white badge bg-info">{{ obj.status }}</span></td>
+                                    <td>{{ obj.payment_method }}</td>
+                                    <td>{{ obj.amount }}</td>
+                                    <td>{{ obj.currency }}</td>
+                                    <td>
+                                        {% if obj.is_paid %}
+                                            <i class="text-success fa fa-check-circle"></i>
+                                        {% else %}
+                                            <i class="text-danger ms-2 bx bx-no-entry"></i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">
+                                        <p class="text-danger">No Requests for this service have been added.</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
