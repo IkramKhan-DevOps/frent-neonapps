@@ -41,14 +41,24 @@
                         <a class="nav-link" href="{% url 'website:become-a-provider' %}">Become a Provider</a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'website:contact-us' %}">Contact</a>
+                    </li>
+
                 </ul>
             </div>
             <ul class="nav header-navbar-rht">
-
-                <li class="nav-item">
-                    <a class="nav-link btn btn-linear-primary" href="{% url 'website:contact-us' %}"
-                      ><i class="ti ti-user-filled me-2"></i>Contact Us</a>
-                </li>
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-linear-primary" href="{% url 'dashboard:dashboard' %}"
+                        >Dashboard</a>
+                    </li>
+                {% else %}
+                     <li class="nav-item">
+                        <a class="nav-link btn btn-linear-primary" href="{% url 'account_login' %}"
+                        ><i class="ti ti-user-filled me-2"></i>login</a>
+                    </li>
+                {% endif %}
             </ul>
         </nav>
     </div>

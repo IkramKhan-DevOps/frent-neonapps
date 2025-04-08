@@ -1,15 +1,17 @@
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.views.generic import ListView, View
+from fcm_django.admin import FCMDevice
 
+from src.apps.whisper.fcm.utils import FireBaseMessage
 from src.apps.whisper.filters import EmailNotificationFilter
 from src.apps.whisper.main import NotificationService
 from src.apps.whisper.models import EmailNotification
 
 
 
-class EmailNotificationListView( ListView):
+class EmailNotificationListView(ListView):
     model = EmailNotification
     template_name = 'whisper/emailnotification_list.html'
 
@@ -33,8 +35,6 @@ class EmailNotificationListView( ListView):
 
 
 class EmailNotificationRetryView(View):
-    def get_permission_name(self):
-        return "whisper.change_emailnotification"
 
     def get(self, request, *args, **kwargs):
         email_notification_id = kwargs.get('pk')
@@ -57,3 +57,28 @@ class EmailNotificationRetryView(View):
                                                      [email_notification.recipient])
 
         return redirect('whisper:emailnotification-list')
+
+
+class FCMNotificationCreateAdminView(View):
+    template_name = 'whisper/device_create_admin.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        title = request.POST.get('title')
+        body = request.POST.get('body')
+        token = request.POST.get('token')
+
+        if title and body and token:
+            device = FCMDevice.objects.filter(registration_id=token)
+            if device:
+                firebase_message = FireBaseMessage(title, body)
+                firebase_message.sent_message_single(device.first())
+                print("Message sent")
+            else:
+                print("Device not found")
+        else:
+            print("Some of the required details are missing")
+
+        return render(request, self.template_name)

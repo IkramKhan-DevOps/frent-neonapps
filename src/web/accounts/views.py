@@ -22,14 +22,9 @@ class CrossAuthView(View):
 
         if not request.user.is_authenticated:
             return redirect('account_login')
-
-        if request.user.is_staff:
+        if request.user.is_staff or request.user.is_superuser:
             return redirect('dashboard:dashboard')
-
-        if request.user.is_superuser:
-            return redirect('/admin/')
-
-        return redirect('/')
+        return redirect('account_logout')
 
 
 @method_decorator(login_required, name='dispatch')

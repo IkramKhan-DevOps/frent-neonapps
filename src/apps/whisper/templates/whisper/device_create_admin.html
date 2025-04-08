@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load core_tags %}
+
+{% block subtitle %}
+    Push Notification Test
+{% endblock %}
+
+{% block page_heading %}Push Notification Test {% endblock %}
+
+{% block content %}
+
+    <section class="inner-section wallet-part">
+        <div class="container">
+
+            <div class="row justify-content-center">
+
+                <div class="col-sm-8">
+                    <div class="card p-4 mb-4">
+                        <div class="account-content p-4">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {# THREE FIELDS title, body, token #}
+                                <div class="form-group">
+                                    <label for="title">Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="body">Body</label>
+                                    <textarea class="form-control" id="body" name="body" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="token">Token</label>
+                                    <input type="text" class="form-control" id="token" name="token" required>
+                                </div>
+                                <button class="btn btn-success mt-4">
+                                    <i class="fa fa-save"></i> Submit
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
