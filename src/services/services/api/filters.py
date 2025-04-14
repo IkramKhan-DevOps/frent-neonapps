@@ -11,7 +11,12 @@ class ServiceFilter(django_filters.FilterSet):
     date = django_filters.CharFilter(method='filter_by_date_and_time')
     start_time = django_filters.TimeFilter(method='filter_by_date_and_time')
     end_time = django_filters.TimeFilter(method='filter_by_date_and_time')
-
+    location = django_filters.CharFilter(field_name="provider__service_provider_profile__address",
+                                         lookup_expr='icontains')
+    province = django_filters.CharFilter(field_name="provider__service_provider_profile__region__name",
+                                         lookup_expr='icontains')
+    sub_region = django_filters.CharFilter(field_name="provider__service_provider_profile__sub_region__name",
+                                           lookup_expr='icontains')
     latitude = django_filters.CharFilter(method='filter_by_latitude')
     longitude = django_filters.CharFilter(method='filter_by_longitude')
 
@@ -55,4 +60,8 @@ class ServiceFilter(django_filters.FilterSet):
 
     def search_services(self, queryset, name, value):
         return queryset.filter(title__icontains=value) | queryset.filter(description__icontains=value)
+
+
+
+
 
