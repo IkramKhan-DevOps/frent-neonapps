@@ -1,8 +1,10 @@
+from allauth.account.models import EmailAddress, EmailConfirmation
+from allauth.account.signals import email_confirmed
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.apple.views import AppleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView, SocialConnectView, VerifyEmailView
-from dj_rest_auth.registration.serializers import VerifyEmailSerializer
+from dj_rest_auth.registration.serializers import VerifyEmailSerializer, ResendEmailVerificationSerializer
 from django.contrib.auth import authenticate, login
 from rest_framework import permissions, status
 from rest_framework.authtoken.models import Token
@@ -15,6 +17,7 @@ from root.settings import GOOGLE_CALLBACK_ADDRESS, APPLE_CALLBACK_ADDRESS
 from src.api.auth.serializers import PasswordSerializer, UserSerializer, CustomLoginSerializer, \
     EmailConfirmationSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
 from src.services.users.models import User
+from src.web.accounts.adapters import MyAccountAdapter
 
 
 class GoogleLogin(SocialLoginView):
@@ -54,7 +57,6 @@ class CustomLoginView(CreateAPIView):
         return Response({'key': new_token.key}, status=status.HTTP_200_OK)
 
 
-
 class PasswordResetView(GenericAPIView):
     serializer_class = PasswordResetSerializer
     permission_classes = (AllowAny,)
@@ -68,6 +70,7 @@ class PasswordResetView(GenericAPIView):
             status=status.HTTP_200_OK,
         )
 
+
 class PasswordResetConfirmView(GenericAPIView):
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = (AllowAny,)
@@ -80,6 +83,28 @@ class PasswordResetConfirmView(GenericAPIView):
             {'detail': 'Password has been reset with the new password.'},
             status=status.HTTP_200_OK,
         )
+
+
+class ResendVerificationCodeView(CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ResendEmailVerificationSerializer
+    queryset = EmailAddress.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = self.get_queryset().filter(**serializer.validated_data).first()
+        if email and not email.verified:
+            adaptor = MyAccountAdapter()
+            email_address = EmailAddress.objects.filter(email=email.email).first()
+            emailconfirmation = EmailConfirmation.objects.filter(email_address=email_address).delete()
+            emailconfirmation = EmailConfirmation.objects.create(
+                    email_address=email_address,
+                )
+            adaptor.send_confirmation_mail(request, emailconfirmation, signup=False)
+            return Response({'detail': 'Verification Code Send'}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Your Account is Already Verified'}, status=status.HTTP_200_OK)
+
 
 class EmailConfirmationView(GenericAPIView):
     serializer_class = EmailConfirmationSerializer

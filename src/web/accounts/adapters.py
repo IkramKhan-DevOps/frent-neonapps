@@ -45,14 +45,15 @@ class MyAccountAdapter(DefaultAccountAdapter):
         return message.sid
 
     def send_confirmation_mail(self, request, emailconfirmation, signup):
+
         # Generate the verification key
         verification_key = str(random.randint(100000, 999999))
-
         # Get or create EmailConfirmation
         emailconfirmation, created = EmailConfirmation.objects.get_or_create(
             email_address=emailconfirmation.email_address,
-            defaults={'key': verification_key}  # Set the key only if the object is created
+            key=verification_key
         )
+        print("Email Confirmation:", emailconfirmation)
         emailconfirmation.sent = timezone.now()
         emailconfirmation.save()
 
