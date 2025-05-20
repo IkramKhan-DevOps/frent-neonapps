@@ -1,6 +1,6 @@
 import random
 import re
-from allauth.account.models import EmailConfirmation
+from allauth.account.models import EmailConfirmation, EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer, VerifyEmailSerializer
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -68,6 +68,12 @@ class CustomLoginSerializer(serializers.Serializer, ValidationMixin):
 
         if not user.check_password(password):
             raise serializers.ValidationError("Invalid credentials")
+
+        # Check Email Verification
+        email_address = EmailAddress.objects.filter(
+            user=user, email=email).first()
+        if email_address and not email_address.verified:
+            raise serializers.ValidationError("User is not verified.")
 
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         attrs['user'] = user
@@ -193,7 +199,6 @@ class PasswordResetSerializer(serializers.Serializer):
                 self.send_sms(user.phone_number, otp)
             except Exception as e:
                 raise serializers.ValidationError({"sms": "Failed to send OTP via SMS."})
-
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
