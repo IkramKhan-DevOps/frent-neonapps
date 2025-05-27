@@ -2,7 +2,7 @@
 from cities_light.models import SubRegion, Region, Country
 from rest_framework import serializers
 from src.core.models import Language, Country
-from src.core.models import  Country as GlobalCountry
+from src.core.models import Country as GlobalCountry
 from src.services.services.api.serializers import UserProfileSerializer
 from src.services.services.models import ServiceCategory, Service, \
     ServiceCurrency
@@ -42,6 +42,19 @@ class LanguageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Language
         fields = ['id', 'name', 'short_name']
+
+
+class ServiceCategoryListSerializer(serializers.ModelSerializer):
+    subcategories = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ServiceCategory
+        fields = ['id', 'name', 'parent', 'thumbnail', 'description', 'is_active', 'subcategories']
+
+    def get_subcategories(self, obj):
+        if obj.subcategories.exists():
+            return ServiceCategorySerializer(obj.subcategories.all(), many=True, context=self.context).data
+        return []
 
 
 """ ---------------------Service Serializers--------------------- """

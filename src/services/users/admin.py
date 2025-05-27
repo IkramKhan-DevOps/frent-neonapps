@@ -19,7 +19,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 
 from .models import (
     User, BlockedUser, ServiceProvider, Address, UserImage, SocialMedia, Interest, Certification,
-    ServiceProviderLanguage, UserContact,PasswordResetOTP
+    ServiceProviderLanguage, UserContact, PasswordResetOTP
 )
 
 csrf_protect_m = method_decorator(csrf_protect)
@@ -261,7 +261,7 @@ class UserImagesAdmin(admin.ModelAdmin):
 
 @admin.register(SocialMedia)
 class SocialMediaAdmin(admin.ModelAdmin):
-    list_display = ('service_provider', 'facebook', 'instagram', 'twitter', 'linkedin')
+    list_display = ('service_provider', 'platform', 'url')
     search_fields = ('service_provider__user__username',)
 
 
@@ -278,22 +278,25 @@ class CertificationAdmin(admin.ModelAdmin):
     search_fields = ('service_provider__user__username',)
     readonly_fields = ('created_at', 'updated_at')
 
+
 @admin.register(ServiceProviderLanguage)
 class ServiceProviderLanguageAdmin(admin.ModelAdmin):
     list_display = ('language', 'fluency')
     search_fields = ('language', 'fluency')
+
 
 @admin.register(UserContact)
 class UserContactAdmin(admin.ModelAdmin):
     list_display = ('name', 'phone_number')
     search_fields = ('name', 'phone_number')
 
+
 @admin.register(PasswordResetOTP)
 class PasswordResetOTPAdmin(admin.ModelAdmin):
-    list_display = ('user', 'otp_code', 'created_at','expires_at')
+    list_display = ('user', 'otp_code', 'created_at', 'expires_at')
     search_fields = ('user__username', 'otp_code')
     readonly_fields = ('created_at', 'expires_at')
 
+
 # Register User with the custom admin
 admin.site.register(User, UserCustomAdmin)
-

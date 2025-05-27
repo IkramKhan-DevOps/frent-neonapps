@@ -123,7 +123,7 @@ class CertificationSerializer(serializers.ModelSerializer):
 class SocialMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMedia
-        fields = ['id', 'facebook', 'instagram', 'twitter', 'linkedin', ]
+        fields = ['id', 'platform', 'url']
 
 
 # """ ---------------------Service Provider Serializers--------------------- """
@@ -203,8 +203,9 @@ class UserBlockSerializer(serializers.ModelSerializer):
         return blocked_user
 
 
-
 report = apps.get_model('reporting', 'Report')
+
+
 class ReportingSerializer(serializers.ModelSerializer):
     class Meta:
         model = report
@@ -214,7 +215,6 @@ class ReportingSerializer(serializers.ModelSerializer):
 
     def validate_reported_user(self, reported_user):
         user = self.context['request'].user
-        if report.objects.filter(reported_user=reported_user,reported_by=user).exists():
+        if report.objects.filter(reported_user=reported_user, reported_by=user).exists():
             raise serializers.ValidationError("You have already reported this.")
         return reported_user
-

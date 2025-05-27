@@ -14,6 +14,10 @@ class ServiceCategory(models.Model):
     name = models.CharField(max_length=100, unique=True, help_text="Unique category name.")
     thumbnail = models.ImageField(upload_to='services/categories/', null=True, blank=True,
                                   help_text='Recommended size: 250x250.')
+    parent = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subcategories',
+        help_text="Parent category for subcategories."
+    )
     description = models.TextField(blank=True, null=True, help_text="Small description of the category.")
     is_active = models.BooleanField(default=True, help_text="Indicates if the category is currently active.")
 
@@ -52,6 +56,7 @@ class ServiceCurrency(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['name'], name="unique_service_currency_name")
         ]
+
 
 # SER M
 class Service(models.Model):
@@ -151,10 +156,34 @@ class ServiceImage(models.Model):
 
 class ServiceAvailability(models.Model):
     """Service availability slots for providers"""
+    ACTIVITY_TYPE_CHOICES = [
+        ('one_time', 'One-Time'),
+        ('recurring', 'Recurring'),
+    ]
+    REPEAT_TYPE_CHOICES = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+
+    DAYS_CHOICES = (
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    )
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='availability_slots')
+    activity_type = models.CharField(max_length=10, choices=ACTIVITY_TYPE_CHOICES, default='one_time',
+                                     help_text="Type of availability (one-time or recurring).")
+    repeat_type = models.CharField(max_length=10, choices=REPEAT_TYPE_CHOICES, default='weekly',
+                                   help_text="Repeat type for recurring availability (daily, weekly, or monthly).")
 
-    day_of_week = models.CharField(max_length=10, help_text="Day of the week (e.g., Monday).")
+    day_of_week = models.CharField(max_length=10, choices=DAYS_CHOICES, default='monday',
+                                   help_text="Day of the week (e.g., Monday).")
     start_time = models.TimeField(help_text="Start time of availability.")
     end_time = models.TimeField(help_text="End time of availability.")
     timezone = models.CharField(max_length=50, default="UTC",
@@ -256,7 +285,8 @@ class ServiceReview(models.Model):
     provider = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                  related_name='provider_reviews')
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, related_name='reviews', null=True, blank=True)
-    service_title = models.CharField(max_length=255, help_text="Service title at the time of review.",null=True, blank=True)
+    service_title = models.CharField(max_length=255, help_text="Service title at the time of review.", null=True,
+                                     blank=True)
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_reviews')
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], help_text="Rating (1-5).")
     comment = models.TextField(blank=True, null=True, help_text="Optional review comment.")
@@ -285,8 +315,10 @@ class UserReview(models.Model):
     """Stores reviews for users (providers/customers)"""
 
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
-    reviewed_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reviews',help_text="The user who is reviewed.")
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_user_reviews',help_text="The user who wrote the review.")
+    reviewed_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reviews',
+                                      help_text="The user who is reviewed.")
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_user_reviews',
+                                 help_text="The user who wrote the review.")
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)], help_text="Rating (1-5).")
     comment = models.TextField(blank=True, null=True, help_text="Optional review comment.")
     is_active = models.BooleanField(default=True, help_text="Is this UserReview active?")

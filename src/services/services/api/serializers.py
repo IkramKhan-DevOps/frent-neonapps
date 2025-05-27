@@ -31,7 +31,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class ServiceCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceCategory
-        fields = ['id', 'name', 'thumbnail', 'description', 'is_active']
+        fields = ['id', 'name', 'parent', 'thumbnail', 'description', 'is_active']
         ref_name = 'ServiceCategoryServices'
 
 
@@ -50,7 +50,8 @@ class ServiceImageSerializer(serializers.ModelSerializer):
 class ServiceAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceAvailability
-        fields = ['id', 'day_of_week', 'start_time', 'end_time', 'timezone', 'is_active']
+        fields = ['id', 'repeat_type', 'activity_type', 'day_of_week', 'start_time', 'end_time', 'timezone',
+                  'is_active']
 
 
 class ServiceLocationSerializer(serializers.ModelSerializer):

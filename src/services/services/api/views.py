@@ -10,11 +10,18 @@ from src.services.services.api.filters import ServiceFilter
 from src.services.services.api.serializers import ServiceSerializer, ServiceDetailSerializer, \
     ServiceCreateUpdateSerializer, ServiceImageSerializer, ServiceAvailabilitySerializer, ServiceLocationSerializer, \
     ServiceReviewSerializer, ServiceCurrencySerializer, ServiceLanguageSerializer, \
-    ServiceRuleInstructionCreateSerializer, ServiceLanguageCreateSerializer, UserServiceReviewSerializer
+    ServiceRuleInstructionCreateSerializer, ServiceLanguageCreateSerializer, UserServiceReviewSerializer, \
+    ServiceCategorySerializer
 from src.services.services.models import Service, ServiceImage, ServiceLocation, ServiceAvailability, ServiceReview, \
-    ServiceCurrency, ServiceRuleInstruction, ServiceLanguage, ServiceRule
+    ServiceCurrency, ServiceRuleInstruction, ServiceLanguage, ServiceRule, ServiceCategory
 
 """SERVICE SEEKER APIS"""
+
+
+class ServiceCategoryCreateAPIView(CreateAPIView):
+    queryset = ServiceCategory.objects.all()
+    serializer_class = ServiceCategorySerializer
+    permission_classes = [IsAuthenticated]
 
 
 class ServiceListAPIView(ListAPIView):

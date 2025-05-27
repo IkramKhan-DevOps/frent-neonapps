@@ -38,7 +38,7 @@ class ServiceReviewInline(admin.TabularInline):
 
 class ServiceCategoryAdmin(admin.ModelAdmin):
     """Admin interface for ServiceCategory"""
-    list_display = ('name', 'is_active', 'created_at', 'updated_at')
+    list_display = ('name', 'parent', 'is_active', 'created_at', 'updated_at')
     search_fields = ('name',)
     list_filter = ('is_active',)
 
@@ -70,7 +70,8 @@ class ServiceImageAdmin(admin.ModelAdmin):
 class ServiceAvailabilityAdmin(admin.ModelAdmin):
     """Admin interface for ServiceAvailability"""
     list_display = (
-        'service', 'day_of_week', 'start_time', 'end_time', 'timezone', 'is_active', 'created_at', 'updated_at')
+        'service', 'activity_type', 'day_of_week', 'start_time', 'end_time', 'timezone', 'is_active', 'created_at',
+        'updated_at')
     search_fields = ('service__title', 'day_of_week')
     list_filter = ('is_active', 'day_of_week')
 
@@ -108,7 +109,6 @@ class ServiceRuleAdmin(admin.ModelAdmin):
 class ServiceRuleInstructionAdmin(admin.ModelAdmin):
     """Admin configuration for ServiceRuleInstruction model"""
     list_display = ['id', 'service_rule', 'required_material', 'created_at', 'updated_at']
-
 
 
 admin.site.register(ServiceCategory, ServiceCategoryAdmin)

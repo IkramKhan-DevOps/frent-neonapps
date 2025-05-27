@@ -11,7 +11,8 @@ from rest_framework.views import APIView
 from src.services.services.models import Service, ServiceCategory
 from .serializers import (
     ServiceHomeListSerializer,
-    ServiceCategorySerializer, SubRegionSerializer, RegionSerializer, LanguageSerializer, CountrySerializer
+    ServiceCategorySerializer, SubRegionSerializer, RegionSerializer, LanguageSerializer, CountrySerializer,
+    ServiceCategoryListSerializer
 )
 from ...core.models import Language, Country
 
@@ -49,6 +50,14 @@ class HomeAPIView(ListAPIView):
 
 
 """-------------------Helper-------------------"""
+
+
+class ServiceCategoryListAPIView(ListAPIView):
+    serializer_class = ServiceCategoryListSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return ServiceCategory.objects.filter(is_active=True).order_by('name')
 
 
 class CategorySubRegionProvinceLanguageApiView(APIView):

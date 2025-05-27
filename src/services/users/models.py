@@ -226,11 +226,10 @@ class ServiceProvider(models.Model):
 
 class SocialMedia(models.Model):
     """Social Media Model for ServiceProvider"""
-    service_provider = models.OneToOneField("ServiceProvider", related_name='social_media', on_delete=models.CASCADE)
-    facebook = models.URLField(blank=True, null=True, verbose_name="Facebook Profile")
-    instagram = models.URLField(blank=True, null=True, verbose_name="Instagram Profile")
-    twitter = models.URLField(blank=True, null=True, verbose_name="Twitter Profile")
-    linkedin = models.URLField(blank=True, null=True, verbose_name="LinkedIn Profile")
+    service_provider = models.ForeignKey("ServiceProvider", related_name='social_media', on_delete=models.CASCADE)
+    platform = models.CharField(max_length=100, verbose_name="Social Media Platform",
+                                help_text="e.g., Facebook, Twitter, LinkedIn")
+    url = models.URLField()
 
     def __str__(self):
         return f"Social Media for {self.service_provider.user.username}"

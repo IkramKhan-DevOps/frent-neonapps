@@ -3,7 +3,7 @@ from django.views.generic import DeleteView
 from rest_framework import status
 from rest_framework.generics import UpdateAPIView, CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView, \
     get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from src.services.services.models import FavoriteService
@@ -43,7 +43,7 @@ class UserRetrieveAPIView(RetrieveAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self):
         return get_object_or_404(self.queryset, id=self.kwargs.get('pk'))
@@ -85,7 +85,6 @@ class UserAddressRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
     def get_object(self):
         user = self.request.user
-        print("User", user)
         user_address, created = Address.objects.get_or_create(user=user)
         return user_address
 
@@ -119,7 +118,7 @@ class ServiceProviderRetrieveAPIView(RetrieveAPIView):
     """
     queryset = ServiceProvider.objects.all()
     serializer_class = ServiceProviderDetailSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self):
         return get_object_or_404(self.queryset, id=self.kwargs.get('pk'))

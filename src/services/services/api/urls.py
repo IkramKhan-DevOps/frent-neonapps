@@ -7,7 +7,7 @@ from .views import (
     ServiceAvailabilityCreateAPIView, ServiceAvailabilityUpdateDestroyAPIView,
     ServiceLocationCreateAPIView, ServiceLocationUpdateDestroyAPIView, ServiceReviewCreateAPIView,
     ServiceCurrencyView, ServiceLanguageCreateAPIView, ServiceLanguageDestroyAPIView,
-    ServiceRuleInstructionCreateAPIView, UserServiceReviewCreateAPIView
+    ServiceRuleInstructionCreateAPIView, UserServiceReviewCreateAPIView, ServiceCategoryCreateAPIView
 )
 
 app_name = "services-api"
@@ -15,6 +15,9 @@ app_name = "services-api"
 urlpatterns = [
     path('v1/services/currency/', ServiceCurrencyView.as_view(), name='service-currency'),
     path('v1/services/', ServiceListAPIView.as_view(), name='service-list'),
+
+    path('v1/services/category/', ServiceCategoryCreateAPIView.as_view(), name='service-category-create'),
+
     path('v1/services/<str:pk>/', ServiceDetailAPIView.as_view(), name='service-detail'),
 ]
 
