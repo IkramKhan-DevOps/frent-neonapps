@@ -221,8 +221,11 @@ class ServiceProviderSocialMediaListCreateAPIView(ListCreateAPIView):
     serializer_class = SocialMediaSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
-        return get_object_or_404(self.queryset, service_provider=self.request.user.get_service_provider_profile())
+    def get_queryset(self):
+        return self.queryset.filter(service_provider=self.request.user.get_service_provider_profile())
+
+    def perform_create(self, serializer):
+        serializer.save(service_provider=self.request.user.get_service_provider_profile())
 
 
 class ServiceProviderSocialMediaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
