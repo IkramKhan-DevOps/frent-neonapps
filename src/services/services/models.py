@@ -61,7 +61,7 @@ class ServiceCurrency(models.Model):
 # SER M
 class Service(models.Model):
     PRICE_TYPE_CHOICES = [
-        ('fixed', 'Fixed'),
+        ('one-time', 'One Time'),
         ('hourly', 'Hourly'),
     ]
     SERVICE_TYPE_CHOICES = [
