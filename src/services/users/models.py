@@ -228,8 +228,8 @@ class SocialMedia(models.Model):
     """Social Media Model for ServiceProvider"""
     service_provider = models.ForeignKey("ServiceProvider", related_name='social_media', on_delete=models.CASCADE)
     platform = models.CharField(max_length=100, verbose_name="Social Media Platform",
-                                help_text="e.g., Facebook, Twitter, LinkedIn")
-    url = models.URLField()
+                                help_text="e.g., Facebook, Twitter, LinkedIn", null=True, blank=False)
+    url = models.URLField(null=True, blank=False)
 
     def __str__(self):
         return f"Social Media for {self.service_provider.user.username}"
