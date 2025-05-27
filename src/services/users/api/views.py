@@ -216,13 +216,23 @@ class ServiceProviderCertificateDestroyAPIView(DestroyAPIView):
         return Response(status=status.HTTP_200_OK, data={'message': 'Certificate deleted successfully'})
 
 
-class ServiceProviderSocialMediaUpdateAPIView(UpdateAPIView):
+class ServiceProviderSocialMediaListCreateAPIView(ListCreateAPIView):
     queryset = SocialMedia.objects.all()
     serializer_class = SocialMediaSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return get_object_or_404(self.queryset, service_provider=self.request.user.get_service_provider_profile())
+
+
+class ServiceProviderSocialMediaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = SocialMedia.objects.all()
+    serializer_class = SocialMediaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(self.queryset, service_provider=self.request.user.get_service_provider_profile(),
+                                 id=self.kwargs.get('pk'))
 
 
 # User Favorite Service

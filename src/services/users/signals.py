@@ -38,15 +38,3 @@ def create_user_wallet(sender, instance, created, **kwargs):
     wallet = apps.get_model('finance', 'Wallet')
     if not wallet_exists:
         wallet.objects.get_or_create(user=instance)
-
-
-@receiver(post_save, sender=ServiceProvider, dispatch_uid="create_social_media_profile")
-def create_social_media_profile(sender, instance, created, **kwargs):
-    """
-    Signal to create a SocialMedia profile for the user
-    if the user does not already have one.
-    """
-    social_media_exists = hasattr(instance, 'social_media')
-    social_media = apps.get_model('users', 'SocialMedia')
-    if not social_media_exists:
-        social_media.objects.get_or_create(service_provider=instance)

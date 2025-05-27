@@ -2,7 +2,8 @@ from django.urls import path
 
 from src.services.users.api.views import UserRetrieveUpdateAPIView, UserImageCreateAPIView, UserImageDestroyAPIView, \
     UserAddressRetrieveUpdateAPIView, ServiceProviderRetrieveUpdateAPIView, ServiceProviderInterestCreateAPIView, \
-    ServiceProviderSocialMediaUpdateAPIView, ServiceProviderCertificateDestroyAPIView, \
+    ServiceProviderSocialMediaRetrieveUpdateDestroyAPIView, ServiceProviderSocialMediaListCreateAPIView, \
+    ServiceProviderCertificateDestroyAPIView, \
     ServiceProviderCertificationCreateAPIView, ServiceProviderLanguageCreateAPIView, \
     ServiceProviderLanguageDestroyAPIView, FavoriteServiceDestroyAPIView, FavoriteServiceListCreateAPIView, \
     UserContactListCreateAPIView, UserContactUpdateDestroyAPIView, ServiceProviderInterestDestroyAPIView, \
@@ -48,9 +49,10 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-
-    path('v1/service-provider/social-media/', ServiceProviderSocialMediaUpdateAPIView.as_view(),
-         name='service-provider-social-media'),
+    path('v1/service-provider/social-media/', ServiceProviderSocialMediaListCreateAPIView.as_view(),
+         name='service-provider-social-media-list-create'),
+    path('v1/service-provider/social-media/<str:pk>/', ServiceProviderSocialMediaRetrieveUpdateDestroyAPIView.as_view(),
+         name='service-provider-social-media-update-destroy'),
 ]
 
 urlpatterns += [
