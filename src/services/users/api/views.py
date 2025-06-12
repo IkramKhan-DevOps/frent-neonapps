@@ -78,7 +78,6 @@ class UserImageDestroyAPIView(DestroyAPIView):
 class ServiceProviderSocialMediaListAPIView(ListAPIView):
     queryset = SocialMedia.objects.all()
     serializer_class = SocialMediaSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return self.queryset.filter(service_provider__id=self.kwargs.get('pk'))
