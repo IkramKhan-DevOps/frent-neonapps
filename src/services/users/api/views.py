@@ -2,7 +2,7 @@ from django.apps import apps
 from django.views.generic import DeleteView
 from rest_framework import status
 from rest_framework.generics import UpdateAPIView, CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView, \
-    get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+    get_object_or_404, ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
@@ -73,6 +73,15 @@ class UserImageDestroyAPIView(DestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_200_OK, data={'message': 'Image deleted successfully'})
+
+
+class ServiceProviderSocialMediaListAPIView(ListAPIView):
+    queryset = SocialMedia.objects.all()
+    serializer_class = SocialMediaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(service_provider__id=self.kwargs.get('pk'))
 
 
 class UserAddressRetrieveUpdateAPIView(RetrieveUpdateAPIView):
@@ -236,6 +245,12 @@ class ServiceProviderSocialMediaRetrieveUpdateDestroyAPIView(RetrieveUpdateDestr
     def get_object(self):
         return get_object_or_404(self.queryset, service_provider=self.request.user.get_service_provider_profile(),
                                  id=self.kwargs.get('pk'))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_200_OK,
+                        data={'message': 'Service provider Social Media deleted successfully'})
 
 
 # User Favorite Service

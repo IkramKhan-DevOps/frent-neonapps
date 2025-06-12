@@ -8,7 +8,7 @@ from src.services.users.api.views import UserRetrieveUpdateAPIView, UserImageCre
     ServiceProviderLanguageDestroyAPIView, FavoriteServiceDestroyAPIView, FavoriteServiceListCreateAPIView, \
     UserContactListCreateAPIView, UserContactUpdateDestroyAPIView, ServiceProviderInterestDestroyAPIView, \
     ServiceProviderRetrieveAPIView, UserRetrieveAPIView, BlockedUserListCreateAPIView, BlockedUserDestroyAPIView, \
-    ReportListCreateApiView
+    ReportListCreateApiView, ServiceProviderSocialMediaListAPIView
 
 app_name = "users-api"
 
@@ -49,6 +49,9 @@ urlpatterns += [
 ]
 
 urlpatterns += [
+    path('v1/service-provider/<str:pk>/social-media/', ServiceProviderSocialMediaListAPIView.as_view(),
+         name='service-provider-social-media-get'),
+
     path('v1/service-provider/social-media/', ServiceProviderSocialMediaListCreateAPIView.as_view(),
          name='service-provider-social-media-list-create'),
     path('v1/service-provider/social-media/<str:pk>/', ServiceProviderSocialMediaRetrieveUpdateDestroyAPIView.as_view(),
