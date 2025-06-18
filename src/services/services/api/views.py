@@ -93,9 +93,9 @@ class ProviderServiceImageUploadCreateAPIView(CreateAPIView):
         return Response(status=status.HTTP_201_CREATED, data={'message': 'Image uploaded successfully'})
 
 
-class ProviderServiceImageDeleteAPIView(DestroyAPIView):
+class ProviderServiceImageUpdateDeleteAPIView(UpdateAPIView, DestroyAPIView):
     queryset = ServiceImage.objects.all()
-    serializer_class = ServiceImage
+    serializer_class = ServiceImageSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -200,7 +200,7 @@ class ServiceLanguageCreateAPIView(CreateAPIView):
         return Response(status=status.HTTP_201_CREATED, data=serializer.data)
 
 
-class ServiceLanguageDestroyAPIView(DestroyAPIView):
+class ServiceLanguageDestroyUpdateAPIView(UpdateAPIView, DestroyAPIView):
     queryset = ServiceLanguage.objects.all()
     serializer_class = ServiceLanguageSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -231,3 +231,57 @@ class ServiceRuleInstructionCreateAPIView(CreateAPIView):
         for material in serializer.validated_data.get('required_material'):
             ServiceRuleInstruction.objects.create(service_rule=service_rule, required_material=material)
         return Response(status=status.HTTP_201_CREATED, data={'message': 'Service rule created successfully'})
+
+
+class ServiceRuleInstructionUpdateAPIView(UpdateAPIView):
+    """
+    Update ServiceRule and its required materials.
+    """
+    serializer_class = ServiceRuleInstructionCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(
+            ServiceRule,
+            service__provider=self.request.user,
+            pk=self.kwargs.get('rule_pk')
+        )
+
+    def update(self, request, *args, **kwargs):
+        service_rule = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        service_rule.event_rule = serializer.validated_data['event_rule']
+        service_rule.save()
+
+        # Delete old instructions
+        ServiceRuleInstruction.objects.filter(service_rule=service_rule).delete()
+
+        # Create new ones
+        for material in serializer.validated_data['required_material']:
+            ServiceRuleInstruction.objects.create(
+                service_rule=service_rule,
+                required_material=material
+            )
+
+        return Response({'message': 'Service rule updated successfully'}, status=status.HTTP_200_OK)
+
+
+class ServiceRuleInstructionDeleteAPIView(DestroyAPIView):
+    """
+    Delete a ServiceRule and all its instructions.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(
+            ServiceRule,
+            service__provider=self.request.user,
+            pk=self.kwargs.get('rule_pk')
+        )
+
+    def delete(self, request, *args, **kwargs):
+        service_rule = self.get_object()
+        service_rule.delete()
+        return Response({'message': 'Service rule deleted successfully'}, status=status.HTTP_204_NO_CONTENT)

@@ -3,11 +3,12 @@ from django.urls import path
 from .views import (
     ServiceListAPIView, ServiceDetailAPIView,
     ProviderServiceListCreateAPIView, ProviderServiceRetrieveUpdateDestroyAPIView,
-    ProviderServiceImageUploadCreateAPIView, ProviderServiceImageDeleteAPIView,
+    ProviderServiceImageUploadCreateAPIView, ProviderServiceImageUpdateDeleteAPIView,
     ServiceAvailabilityCreateAPIView, ServiceAvailabilityUpdateDestroyAPIView,
     ServiceLocationCreateAPIView, ServiceLocationUpdateDestroyAPIView, ServiceReviewCreateAPIView,
-    ServiceCurrencyView, ServiceLanguageCreateAPIView, ServiceLanguageDestroyAPIView,
-    ServiceRuleInstructionCreateAPIView, UserServiceReviewCreateAPIView, ServiceCategoryCreateAPIView
+    ServiceCurrencyView, ServiceLanguageCreateAPIView, ServiceLanguageDestroyUpdateAPIView,
+    ServiceRuleInstructionCreateAPIView, UserServiceReviewCreateAPIView, ServiceCategoryCreateAPIView,
+    ServiceRuleInstructionUpdateAPIView, ServiceRuleInstructionDeleteAPIView
 )
 
 app_name = "services-api"
@@ -30,8 +31,8 @@ urlpatterns += [
 urlpatterns += [
     path('v1/provider/services/<str:service_pk>/image/', ProviderServiceImageUploadCreateAPIView.as_view(),
          name='provider-service-image-upload'),
-    path('v1/provider/services/<str:pk>/image/delete/', ProviderServiceImageDeleteAPIView.as_view(),
-         name='provider-service-image-delete'),
+    path('v1/provider/services/<str:pk>/image/', ProviderServiceImageUpdateDeleteAPIView.as_view(),
+         name='provider-service-image-update-delete'),
 ]
 urlpatterns += [
     path('v1/provider/services/<str:service_pk>/availability/', ServiceAvailabilityCreateAPIView.as_view(),
@@ -57,11 +58,16 @@ urlpatterns += [
 urlpatterns += [
     path('v1/provider/services/<str:service_pk>/language/', ServiceLanguageCreateAPIView.as_view(),
          name='provider-service-language-create'),
-    path('v1/provider/services/<str:service_pk>/language/<str:pk>/', ServiceLanguageDestroyAPIView.as_view(),
-         name='provider-service-language-destroy'),
+
+    path('v1/provider/services/<str:service_pk>/language/<str:pk>/', ServiceLanguageDestroyUpdateAPIView.as_view(),
+         name='provider-service-language-update-destroy'),
 ]
 
 urlpatterns += [
     path('v1/provider/services/<uuid:service_pk>/rule-instruction/', ServiceRuleInstructionCreateAPIView.as_view(),
          name='provider-service-rule-instruction-create'),
+    path('v1/provider/services/rule-instruction/<uuid:rule_pk>/update/', ServiceRuleInstructionUpdateAPIView.as_view(),
+         name='provider-service-rule-instruction-update'),
+    path('v1/provider/services/rule-instruction/<uuid:rule_pk>/delete/', ServiceRuleInstructionDeleteAPIView.as_view(),
+         name='provider-service-rule-instruction-delete'),
 ]
