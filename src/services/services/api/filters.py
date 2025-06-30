@@ -1,5 +1,5 @@
 import django_filters
-from django.db.models import Avg
+from django.db.models import Avg, Q
 
 from src.services.services.models import Service
 
@@ -20,9 +20,12 @@ class ServiceFilter(django_filters.FilterSet):
     latitude = django_filters.CharFilter(method='filter_by_latitude')
     longitude = django_filters.CharFilter(method='filter_by_longitude')
 
+    # ✅ NEW: Filter for materials/tags
+    materials = django_filters.CharFilter(method='filter_by_materials')
+
     class Meta:
         model = Service
-        fields = ['category', 'average_rating', 'date', 'start_time', 'end_time']
+        fields = ['category', 'average_rating', 'date', 'start_time', 'end_time', 'materials']
 
     def filter_by_average_rating(self, queryset, name, value):
         return queryset.annotate(average_rating=Avg('reviews__rating')).filter(average_rating=value)
@@ -46,17 +49,30 @@ class ServiceFilter(django_filters.FilterSet):
         longitude = self.data.get('longitude')
 
         if value and longitude:
-            return queryset.filter(location__latitude__range=(float(value) - 5, float(value) + 5),
-                                   location__longitude__range=(float(longitude) - 5, float(longitude) + 5))
+            return queryset.filter(
+                location__latitude__range=(float(value) - 5, float(value) + 5),
+                location__longitude__range=(float(longitude) - 5, float(longitude) + 5)
+            )
         return queryset
 
     def filter_by_longitude(self, queryset, name, value):
         latitude = self.data.get('latitude')
 
         if value and latitude:
-            return queryset.filter(location__longitude__range=(float(value) - 5, float(value) + 5),
-                                   location__latitude__range=(float(latitude) - 5, float(latitude) + 5))
+            return queryset.filter(
+                location__longitude__range=(float(value) - 5, float(value) + 5),
+                location__latitude__range=(float(latitude) - 5, float(latitude) + 5)
+            )
         return queryset
 
     def search_services(self, queryset, name, value):
-        return queryset.filter(title__icontains=value) | queryset.filter(description__icontains=value)
+        return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
+
+    def filter_by_materials(self, queryset, name, value):
+        materials = [m.strip() for m in value.split(',') if m.strip()]
+        q = Q()
+
+        for material in materials:
+            q |= Q(servicerule__serviceruleinstruction__required_material__icontains=material)
+
+        return queryset.filter(q).distinct()

@@ -3,12 +3,13 @@ from django.urls import path
 from .views import (
     ServiceListAPIView, ServiceDetailAPIView,
     ProviderServiceListCreateAPIView, ProviderServiceRetrieveUpdateDestroyAPIView,
-    ProviderServiceImageUploadCreateAPIView, ProviderServiceImageUpdateDeleteAPIView,
+    ProviderServiceImageUploadCreateAPIView,
     ServiceAvailabilityCreateAPIView, ServiceAvailabilityUpdateDestroyAPIView,
     ServiceLocationCreateAPIView, ServiceLocationUpdateDestroyAPIView, ServiceReviewCreateAPIView,
     ServiceCurrencyView, ServiceLanguageCreateAPIView, ServiceLanguageDestroyUpdateAPIView,
     ServiceRuleInstructionCreateAPIView, UserServiceReviewCreateAPIView, ServiceCategoryCreateAPIView,
-    ServiceRuleInstructionUpdateAPIView, ServiceRuleInstructionDeleteAPIView
+    ServiceRuleInstructionUpdateAPIView, ServiceRuleInstructionDeleteAPIView, ProviderServiceImageUpdateAPIView,
+    ProviderServiceImageDeleteAPIView
 )
 
 app_name = "services-api"
@@ -31,8 +32,16 @@ urlpatterns += [
 urlpatterns += [
     path('v1/provider/services/<str:service_pk>/image/', ProviderServiceImageUploadCreateAPIView.as_view(),
          name='provider-service-image-upload'),
-    path('v1/provider/services/<str:pk>/image/', ProviderServiceImageUpdateDeleteAPIView.as_view(),
-         name='provider-service-image-update-delete'),
+    path(
+        'v1/provider/services/<str:service_image_pk>/image/update/',
+        ProviderServiceImageUpdateAPIView.as_view(),
+        name='provider-service-image-update'
+    ),
+    path(
+        'v1/provider/services/<str:service_image_pk>/image/delete/',
+        ProviderServiceImageDeleteAPIView.as_view(),
+        name='provider-service-image-delete'
+    ),
 ]
 urlpatterns += [
     path('v1/provider/services/<str:service_pk>/availability/', ServiceAvailabilityCreateAPIView.as_view(),

@@ -105,18 +105,15 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 ]
 
-
 # settings.py
 TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = env('TWILIO_PHONE_NUMBER')
 
-
 # settings.py
 CITIES_LIGHT_TRANSLATION_LANGUAGES = ['en']  # Load English translations only
-CITIES_LIGHT_INCLUDE_COUNTRIES = ['FR' ]  # Load data only for Pakistan and Turkey
+CITIES_LIGHT_INCLUDE_COUNTRIES = ['FR']  # Load data only for Pakistan and Turkey
 CITIES_LIGHT_INCLUDE_CITY_TYPES = ['PPL', 'PPLA', 'PPLC']  # Include populated places and capitals
-
 
 AUTHENTICATION_BACKENDS = (
     # DJANGO BACKENDS
@@ -183,14 +180,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 """ FIREBASE ------------------------------------------------------------------------------------------------------- """
-
-
 FIREBASE_PROJECT_NAME = "Frent"
 FIREBASE_PROJECT_ID = "frent-8368b"
 FIREBASE_PROJECT_NUMBER = "233111883476"
 FIREBASE_APP_NICK_NAME = "frent-web-app"
 FIREBASE_APP_ID = "1:233111883476:web:1f91a9f07081cd34e03541"
-FIREBASE_PRIVATE_KEY = "d1eb3d7d5907ca1cd7327d284625459a196d98e4"
+FIREBASE_PRIVATE_KEY = "7fcfcfbb59a5cdb2b399673f3d1728fb194a7be4"
 FIREBASE_WEB_API_KEY = "AIzaSyDEvz2wHTjDttNMMmvU9LatBjzxwy_kejE"
 FIREBASE_SERVICE_ACCOUNT = "firebase-adminsdk-fbsvc@frent-8368b.iam.gserviceaccount.com"
 FIREBASE_FILE = "firebase.json"
@@ -198,7 +193,6 @@ FIREBASE_FILE = "firebase.json"
 if not firebase_admin._apps:
     cred = credentials.Certificate(FIREBASE_FILE)
     app = firebase_admin.initialize_app(cred)
-
 
 # To learn more, visit the docs here:
 # https://cloud.google.com/docs/authentication/getting-started>
@@ -221,8 +215,6 @@ FCM_DJANGO_SETTINGS = {
 }
 
 """ FIREBASE ------------------------------------------------------------------------------------------------------- """
-
-
 
 """ INTERNATIONALIZATION --------------------------------------------------------------------------------"""
 LANGUAGE_CODE = 'en-us'

@@ -93,18 +93,37 @@ class ProviderServiceImageUploadCreateAPIView(CreateAPIView):
         return Response(status=status.HTTP_201_CREATED, data={'message': 'Image uploaded successfully'})
 
 
-class ProviderServiceImageUpdateDeleteAPIView(UpdateAPIView, DestroyAPIView):
+class ProviderServiceImageUpdateAPIView(UpdateAPIView):
     queryset = ServiceImage.objects.all()
     serializer_class = ServiceImageSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        return get_object_or_404(ServiceImage, service__provider=self.request.user, pk=self.kwargs.get('pk'))
+        return get_object_or_404(
+            ServiceImage,
+            service__provider=self.request.user,
+            pk=self.kwargs.get('service_image_pk')
+        )
+
+
+class ProviderServiceImageDeleteAPIView(DestroyAPIView):
+    queryset = ServiceImage.objects.all()
+    serializer_class = ServiceImageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return get_object_or_404(
+            ServiceImage,
+            service__provider=self.request.user,
+            pk=self.kwargs.get('service_image_pk')
+        )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response(status=status.HTTP_200_OK, data={'message': 'Image deleted successfully'})
+        return Response({'message': 'Image deleted successfully'}, status=status.HTTP_200_OK)
+
+
 
 
 # Provider Service Availability
