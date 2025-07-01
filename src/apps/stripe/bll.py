@@ -32,7 +32,7 @@ def stripe_connect_account_create(user):
         wallet = user.get_user_wallet()
         wallet.stripe_account_id = account.id
         wallet.stripe_description = account
-        wallet.stripe_account_country = user.get_address().country.code2
+        wallet.stripe_account_country = user.get_address().country.short_name
         wallet.stripe_account_email = user.email
         wallet.stripe_account_type = "express"
         wallet.save()
