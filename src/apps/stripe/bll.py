@@ -27,7 +27,7 @@ def stripe_connect_account_create(user):
 
     try:
         account = stripe.Account.create(
-            type='express', country=user.get_address().country.code2, email=user.email,
+            type='express', country=user.get_address().country.short_name, email=user.email,
         )
         wallet = user.get_user_wallet()
         wallet.stripe_account_id = account.id
