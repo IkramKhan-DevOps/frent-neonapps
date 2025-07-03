@@ -2,19 +2,28 @@
 {% load static %}
 
 {% block title %}
-    Payments successful
+    Stripe Onboarding Successful
 {% endblock %}
 
 {% block content %}
-    <div class="text-center mt-5">
-        <div>
-            <img class="my-5" src="{% static 'cechk.png' %}" height="100">
-            <h3>Payment Successful</h3>
-            <p>Your payments are successful, you can go back to <a href="{% url 'website:order_list' %}">order</a></p>
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="card shadow-lg p-4 text-center" style="max-width: 500px; width: 100%;">
+            <img src="{% static 'website/check.png' %}" class="mx-auto mb-4" style="width: 100px;" alt="Success Icon">
+
+            <h3 class="text-success">You're All Set!</h3>
+            <p class="text-muted">
+                Your Stripe account has been successfully connected.<br>
+                You can now receive payouts and manage your earnings.
+            </p>
+
+            <div class="mt-4">
+                <a href="{% url 'website:home' %}" class="btn btn-success">
+                    Go to Dashboard →
+                </a>
+            </div>
         </div>
     </div>
 {% endblock %}
 
 {% block footer %}
-
 {% endblock %}

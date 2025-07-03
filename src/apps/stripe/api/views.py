@@ -33,6 +33,36 @@ class ConnectWalletCreateAPIView(APIView):
                         status=status.HTTP_200_OK)
 
 
+class ConnectWalletVisitAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        wallet = user.get_user_wallet()
+
+        # Check if the user has connected their wallet
+        if not user.is_stripe_connected():
+            return Response(
+                {"detail": "You have not connected your wallet."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Generate Stripe connect link
+        error, url = stripe_connect_account_link(wallet.stripe_account_id)
+
+        if error:
+            return Response(
+                {"detail": f"Stripe Error: {error}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Success — return the URL to frontend so it can redirect
+        return Response(
+            {"connect_url": url},
+            status=status.HTTP_200_OK
+        )
+
+
 class ConnectWalletActivateAPIView(APIView):
     """
     Visit the Wallet Dashboard

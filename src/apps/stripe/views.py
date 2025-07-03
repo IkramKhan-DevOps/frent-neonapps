@@ -5,12 +5,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView
 
 from src.apps.stripe.bll import (
     stripe_connect_account_create, stripe_connect_account_link,
 )
 from .webhook_core import hooks_view
-
 
 """ VENDOR VIEWS FOR STRIPE -------------------------------------------------------------------------------------- """
 
@@ -72,6 +72,15 @@ class ConnectWalletVisitView(View):
         return redirect(url)
 
 
+# class ConnectWalletConnected()
+
+
+class StripeRefreshTemplateView(TemplateView):
+    template_name = 'stripe/refresh.html'
+
+
+class StripeReturnTemplateView(TemplateView):
+    template_name = 'stripe/success.html'
 
 
 """ WEBHOOK VIEWS FOR STRIPE -------------------------------------------------------------------------------------- """
