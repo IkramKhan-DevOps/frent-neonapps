@@ -41,9 +41,9 @@ class ConnectWalletVisitAPIView(APIView):
         wallet = user.get_user_wallet()
 
         # Check if the user has connected their wallet
-        if not user.is_stripe_connected():
+        if not user.is_stripe_connected() or not wallet.is_stripe_account_active():
             return Response(
-                {"detail": "You have not Activate your Connect wallet."},
+                {"detail": "You have not Activate/Connected your Connect wallet."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -72,9 +72,9 @@ class ConnectWalletActivateAPIView(APIView):
     def get(self, request, *args, **kwargs):
         user = request.user
         wallet = user.get_user_wallet()
-        if  user.is_stripe_connected():
+        if  wallet.is_stripe_account_active() and user.is_stripe_connected():
             return Response(
-                {"detail": "You already  Activate Your Connect wallet."},
+                {"detail": "Your Connect wallet is already connected and Activated."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
