@@ -74,7 +74,6 @@ INSTALLED_APPS = [
     'src.services.users.apps.UsersConfig',
     'src.services.services.apps.ServicesConfig',
     'src.services.reporting.apps.ReportingConfig',
-    'src.services.wallet.apps.WalletConfig',
     'src.services.finance.apps.FinanceAppConfig',
     'src.services.order.apps.OrderConfig',
     'src.services.dashboard.apps.DashboardConfig',

@@ -14,7 +14,7 @@ def get_connect_account_id(external_account_id):
 
 
 def get_user(connect_account_id):
-    wallet = apps.get_model('wallet', 'Wallet')
+    wallet = apps.get_model('finance', 'Wallet')
 
     wallets = wallet.objects.filter(stripe_account_id=connect_account_id)
     if wallets.exists():

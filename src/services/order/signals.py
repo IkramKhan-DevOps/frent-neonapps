@@ -9,7 +9,7 @@ from src.services.order.models import Order
 def handle_order_payment(sender, instance, created, **kwargs):
     """Handles the wallet balance when order is created and Payment is completed."""
     if instance.order_status == 'pending' and instance.payment_status == 'completed':
-        wallet = apps.get_model('wallet', 'Wallet')
+        wallet = apps.get_model('finance', 'Wallet')
         provider_wallet = wallet.objects.get(user=instance.service_request.service.provider)
         provider_wallet.balance_pending += instance.paid_price
         provider_wallet.save()
