@@ -202,14 +202,20 @@ class WebhookControl:
 
 
 def hooks_view(request):
+    print("WEBHOOK HIT")
     webhook_secret = STRIPE_WEBHOOK_SECRET
     signature = request.META['HTTP_STRIPE_SIGNATURE']
     payload = request.body
+    print("STRIPE_WEBHOOK_SECRET", STRIPE_WEBHOOK_SECRET)
+    print("HTTP_STRIPE_SIGNATURE", signature)
+    print("payload", payload)
 
     try:
 
         event = stripe.Webhook.construct_event(payload=payload, sig_header=signature, secret=webhook_secret)
+        print("event", event)
         webhook_control = WebhookControl(event, event['type'], event['data'])
+        print("event", webhook_control)
         webhook_control.command_control()
         return HttpResponse(status=200)
 
