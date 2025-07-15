@@ -15,7 +15,8 @@ from rest_framework.views import APIView
 
 from root.settings import GOOGLE_CALLBACK_ADDRESS, APPLE_CALLBACK_ADDRESS
 from src.api.auth.serializers import PasswordSerializer, UserSerializer, CustomLoginSerializer, \
-    EmailConfirmationSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer
+     PasswordResetSerializer, PasswordResetConfirmSerializer, CustomRegisterSerializer, \
+    ResendVerificationCodeSerializer, VerificationConfirmationSerializer
 from src.services.users.models import User
 from src.web.accounts.adapters import MyAccountAdapter
 
@@ -57,6 +58,18 @@ class CustomLoginView(CreateAPIView):
         return Response({'key': new_token.key}, status=status.HTTP_200_OK)
 
 
+class CustomRegisterView(CreateAPIView):
+    serializer_class = CustomRegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {"detail": "User registered successfully. An OTP has been sent to your phone number for verification."},
+            status=status.HTTP_201_CREATED)
+
+
 class PasswordResetView(GenericAPIView):
     serializer_class = PasswordResetSerializer
     permission_classes = (AllowAny,)
@@ -86,44 +99,23 @@ class PasswordResetConfirmView(GenericAPIView):
 
 
 class ResendVerificationCodeView(CreateAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = ResendEmailVerificationSerializer
-    queryset = EmailAddress.objects.all()
+    serializer_class = ResendVerificationCodeSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = self.get_queryset().filter(**serializer.validated_data).first()
-        if email and not email.verified:
-            adaptor = MyAccountAdapter()
-            email_address = EmailAddress.objects.filter(email=email.email).first()
-            emailconfirmation = EmailConfirmation.objects.filter(email_address=email_address).delete()
-            emailconfirmation = EmailConfirmation.objects.create(
-                    email_address=email_address,
-                )
-            adaptor.send_confirmation_mail(request, emailconfirmation, signup=False)
-            return Response({'detail': 'Verification Code Send'}, status=status.HTTP_200_OK)
-        return Response({'detail': 'Your Account is Already Verified'}, status=status.HTTP_200_OK)
+        response_data = serializer.save()
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
-class EmailConfirmationView(GenericAPIView):
-    serializer_class = EmailConfirmationSerializer
+class VerifyOTPView(CreateAPIView):
+    serializer_class = VerificationConfirmationSerializer
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        # Confirm email and respond
-        email_address = serializer.confirm_email()
-        if email_address:
-            return Response(
-                {"detail": "Email successfully verified."},
-                status=status.HTTP_200_OK,
-            )
-        return Response(
-            {"detail": "Email is already verified."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        user = serializer.confirm_verification()
+        return Response({"detail": "Phone number verified successfully."}, status=status.HTTP_200_OK)
 
 
 class UserRetrieveChangeAPIView(RetrieveUpdateAPIView):
@@ -134,6 +126,7 @@ class UserRetrieveChangeAPIView(RetrieveUpdateAPIView):
         return self.request.user
 
 
+# Done Verified
 class DeactivateUserAPIView(APIView):
     """ Deactivate user account """
     permission_classes = [permissions.IsAuthenticated]
@@ -164,6 +157,7 @@ class DeactivateUserAPIView(APIView):
         )
 
 
+# Done Verified
 class DeleteUserAPIView(APIView):
     """ Delete user account """
     permission_classes = [permissions.IsAuthenticated]

@@ -1,6 +1,7 @@
 import random
 import uuid
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -20,17 +21,33 @@ class User(AbstractUser):
         ('service_seeker', 'Service Seeker'),
     ]
 
-    email = models.EmailField(unique=True, max_length=200)
+    username_validator = UnicodeUsernameValidator()
+    email = models.EmailField(unique=True, null=True, blank=False, max_length=200)
+
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text=(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[username_validator],
+        error_messages={
+            "unique": "A user with that username already exists.",
+        },
+    )
+
     profile_image = ResizedImageField(
         upload_to='users/images/profiles/', null=True, blank=True, size=[250, 250], quality=75, force_format='PNG',
         help_text='Profile image must be 250x250 and in PNG format', crop=['middle', 'center']
     )
     bio = models.TextField(blank=True, null=True, help_text="Short description about the user.")
     user_type = models.CharField(max_length=20, choices=USER_TYPES, default='service_seeker')
-    phone_number = PhoneNumberField(null=True, blank=True, unique=True)
+    phone_number = PhoneNumberField(null=True, blank=False, unique=True)
 
-    REQUIRED_FIELDS = ["username"]
-    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = "phone_number"
 
     class Meta:
         ordering = ['-id']
@@ -86,6 +103,24 @@ class User(AbstractUser):
     def bank_account_active(self):
         """Check if the user has an active bank account"""
         return True if self.bank_accounts.filter(is_active=True).first() else False
+
+    def user_registration_completed(self):
+        return getattr(self, 'user_registration_otp', False) and self.user_registration_otp.is_verified
+
+
+class UserRegistrationOTP(models.Model):
+    user = models.OneToOneField("User", on_delete=models.CASCADE, related_name="user_registration_otp")
+    otp_code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def __str__(self):
+        return f"OTP for {self.user.email} - {self.otp_code}"
+
+    def key_expired(self):
+        """Returns True if the OTP has expired."""
+        return timezone.now() > self.expires_at
 
 
 class Address(models.Model):
@@ -289,4 +324,4 @@ class PasswordResetOTP(models.Model):
         return timezone.now() < self.expires_at
 
     def __str__(self):
-        return f"OTP for {self.user.email} - {self.otp_code}"
+        return f"OTP for {self.user.get_full_name} - {self.otp_code}"

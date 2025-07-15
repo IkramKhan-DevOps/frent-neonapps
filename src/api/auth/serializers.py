@@ -13,7 +13,7 @@ from rest_framework import serializers
 from twilio.rest import Client
 
 from root import settings
-from src.services.users.models import User, PasswordResetOTP
+from src.services.users.models import User, PasswordResetOTP, UserRegistrationOTP
 from django.utils.translation import gettext_lazy as _
 
 
@@ -44,23 +44,23 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomLoginSerializer(serializers.Serializer, ValidationMixin):
     """Custom serializer for login with email or phone number."""
 
-    email = serializers.CharField(label='Email/Phone Number', max_length=50)
+    phone_number = serializers.CharField(label='Phone Number', max_length=50)
     password = serializers.CharField(label='Password', write_only=True)
 
-    def validate_email(self, value):
+    def validate_phone_number(self, value):
         """Validate email or phone number field."""
-        if not self.is_valid_email(value) and not self.is_valid_phone(value):
-            raise serializers.ValidationError("Email or Phone Number is not valid.")
+        if not self.is_valid_phone(value):
+            raise serializers.ValidationError("Phone Number is not valid.")
         return value
 
     def validate(self, attrs):
         """Validate login credentials."""
-        email = attrs.get('email')
+        phone_number = attrs.get('phone_number')
         password = attrs.get('password')
 
         # Check if the input is an email or phone number
         user = User.objects.filter(
-            models.Q(email=email) | models.Q(phone_number=email)
+            models.Q(phone_number=phone_number) | models.Q(phone_number=phone_number)
         ).first()
 
         if user is None:
@@ -69,48 +69,133 @@ class CustomLoginSerializer(serializers.Serializer, ValidationMixin):
         if not user.check_password(password):
             raise serializers.ValidationError("Invalid credentials")
 
-        # Check Email Verification
-        email_address = EmailAddress.objects.filter(
-            user=user, email=email).first()
-        if email_address and not email_address.verified:
-            raise serializers.ValidationError("User is not verified.")
+        if not user.user_registration_completed():
+            raise serializers.ValidationError("User is not verified Yet")
 
         user.backend = 'django.contrib.auth.backends.ModelBackend'
         attrs['user'] = user
         return attrs
 
 
-class CustomRegisterSerializer(RegisterSerializer):
-    """Custom serializer for user registration."""
+class CustomRegisterSerializer(serializers.Serializer):
+    """Custom serializer for user registration with phone number and password."""
 
     phone_number = serializers.CharField(max_length=15, required=True)
-
-    def validate_email(self, email):
-        """Validate unique email."""
-        if User.objects.filter(email=email).exists():
-            raise serializers.ValidationError("This email is already registered.")
-        return email
+    password1 = serializers.CharField(write_only=True, min_length=8, required=True)
+    password2 = serializers.CharField(write_only=True, min_length=8, required=True)
 
     def validate_phone_number(self, value):
-        print("Validating phone number:", value)  # or use logging
-
         """Validate unique phone number and phone number format."""
-        # Check for uniqueness
         if User.objects.filter(phone_number=value).exists():
             raise serializers.ValidationError("This phone number is already registered.")
 
-        # Validate phone number format (only digits, 10-15 characters)
         if not re.match(r'^\+\d{10,15}$', value):
             raise serializers.ValidationError(
                 "Phone number must start with '+' followed by 10 to 15 digits (including country code)."
             )
         return value
 
-    def save(self, request):
-        user = super().save(request)
-        user.phone_number = self.validated_data.get('phone_number')
+    def validate(self, data):
+        """Ensure passwords match."""
+        if data['password1'] != data['password2']:
+            raise serializers.ValidationError({"password2": "Passwords do not match."})
+        return data
+
+    def send_sms(self, to_number, verification_key):
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            body=f"Your verification code is: {verification_key}",
+            from_=settings.TWILIO_PHONE_NUMBER,
+            to=str(to_number)  # Convert to string here
+        )
+        return message.sid
+
+    def create(self, validated_data):
+        """Create the user using Django's password hashing mechanism."""
+        phone_number = self.validated_data['phone_number']
+        user = User(
+            phone_number=phone_number
+        )
+        user.set_password(validated_data['password1'])
         user.save()
+        otp = str(random.randint(100000, 999999))
+        expires_at = timezone.now() + timezone.timedelta(minutes=10)
+        UserRegistrationOTP.objects.create(user=user, otp_code=otp, expires_at=expires_at)
+        self.send_sms(user.phone_number, otp)
         return user
+
+
+class ResendVerificationCodeSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15, required=True)
+
+    def validate_phone_number(self, value):
+        """Validate if the phone number exists and OTP is not already verified."""
+        try:
+            user = User.objects.get(phone_number=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user found with this phone number.")
+
+        try:
+            otp = user.user_registration_otp
+            if otp.is_verified:
+                raise serializers.ValidationError("This phone number is already verified.")
+        except UserRegistrationOTP.DoesNotExist:
+            pass  # If no OTP exists, allow creation
+
+        return value
+
+    def send_sms(self, to_number, verification_key):
+        client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        message = client.messages.create(
+            body=f"Your verification code is: {verification_key}",
+            from_=settings.TWILIO_PHONE_NUMBER,
+            to=str(to_number)
+        )
+        return message.sid
+
+    def save(self):
+        phone_number = self.validated_data['phone_number']
+        user = User.objects.get(phone_number=phone_number)
+
+        otp = str(random.randint(100000, 999999))
+        expires_at = timezone.now() + timezone.timedelta(minutes=10)
+
+        UserRegistrationOTP.objects.update_or_create(
+            user=user,
+            defaults={'otp_code': otp, 'expires_at': expires_at}
+        )
+
+        self.send_sms(user.phone_number, otp)
+        return {"detail": "A new verification code has been sent to your phone number."}
+
+
+class VerificationConfirmationSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=15, required=True)
+    otp = serializers.CharField()
+
+    def validate(self, attrs):
+        phone_number = attrs.get('phone_number')
+        otp = attrs.get('otp')
+
+        try:
+            phone_number_confirmation = UserRegistrationOTP.objects.get(
+                user__phone_number=phone_number, otp_code=otp
+            )
+        except UserRegistrationOTP.DoesNotExist:
+            raise serializers.ValidationError(_("Invalid phone number or OTP."))
+
+        if phone_number_confirmation.key_expired():
+            raise serializers.ValidationError(_("The OTP has expired."))
+
+        if phone_number_confirmation.is_verified:
+            raise serializers.ValidationError(_("The User is already Registered."))
+        self.phone_number_confirmation = phone_number_confirmation
+        return attrs
+
+    def confirm_verification(self):
+        self.phone_number_confirmation.is_verified = True
+        self.phone_number_confirmation.save()
+        return self.phone_number_confirmation.user  # optional: return user object
 
 
 class PasswordSerializer(serializers.Serializer):
@@ -119,62 +204,14 @@ class PasswordSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, write_only=True)
 
 
-class EmailConfirmationSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    otp = serializers.CharField()
-
-    def validate(self, attrs):
-        email = attrs.get('email')
-        otp = attrs.get('otp')
-
-        # Validate EmailConfirmation existence
-        try:
-            email_confirmation = EmailConfirmation.objects.get(
-                email_address__email=email, key=otp
-            )
-        except EmailConfirmation.DoesNotExist:
-            raise serializers.ValidationError(_("Invalid email or OTP."))
-
-        # Check if the OTP has expired
-        if email_confirmation.key_expired():
-            raise serializers.ValidationError(_("The OTP has expired."))
-
-        attrs['email_confirmation'] = email_confirmation
-        return attrs
-
-    def confirm_email(self):
-        email_confirmation = self.validated_data['email_confirmation']
-        email_address = email_confirmation.confirm(self.context.get('request'))
-        return email_address
-
-
 class PasswordResetSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    phone_number = serializers.CharField(max_length=15, required=True)
 
-    def validate_email(self, value):
+    def validate_phone_number(self, value):
         """Check if email exists in the database"""
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("No user found with this email.")
+        if not User.objects.filter(phone_number=value).exists():
+            raise serializers.ValidationError("No user found with this phone number.")
         return value
-
-    def send_otp_email(self, email, otp):
-        context = {
-            "otp": otp
-        }
-        template_name = "account/password_reset_otp.html"
-        convert_to_html_content = render_to_string(
-            template_name=template_name,
-            context=context
-        )
-        plain_message = strip_tags(convert_to_html_content)
-        send_mail(
-            subject="Password Reset OTP",
-            message=plain_message,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[email, ],
-            html_message=convert_to_html_content,
-            fail_silently=True
-        )
 
     def send_sms(self, to_number, verification_key):
         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
@@ -187,29 +224,24 @@ class PasswordResetSerializer(serializers.Serializer):
 
     def save(self):
         """Generate OTP and send it to the user"""
-        email = self.validated_data['email']
-        user = User.objects.get(email=email)
+        phone_number = self.validated_data['phone_number']
+        user = User.objects.get(phone_number=phone_number)
         PasswordResetOTP.objects.filter(user=user).delete()
         otp = str(random.randint(100000, 999999))
         expires_at = timezone.now() + timezone.timedelta(minutes=10)
         PasswordResetOTP.objects.create(user=user, otp_code=otp, expires_at=expires_at)
-        self.send_otp_email(email, otp)
-        if user.phone_number:
-            try:
-                self.send_sms(user.phone_number, otp)
-            except Exception as e:
-                raise serializers.ValidationError({"sms": "Failed to send OTP via SMS."})
+        self.send_sms(user.phone_number, otp)
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    phone_number = serializers.CharField(max_length=15, required=True)
     otp = serializers.CharField(max_length=6)
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
     def validate(self, data):
         """Validate OTP and passwords"""
-        email = data.get('email')
+        phone_number = data.get('phone_number')
         otp = data.get('otp')
         new_password = data.get('new_password')
         confirm_password = data.get('confirm_password')
@@ -221,9 +253,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         except ValidationError as e:
             raise serializers.ValidationError({"new_password": e.messages})
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(phone_number=phone_number)
         except User.DoesNotExist:
-            raise serializers.ValidationError({"email": "Invalid email."})
+            raise serializers.ValidationError({"phone_number": "Invalid phone number."})
         try:
             otp_obj = PasswordResetOTP.objects.get(user=user, otp_code=otp)
             if otp_obj.expires_at < timezone.now():
