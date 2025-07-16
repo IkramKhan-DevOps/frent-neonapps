@@ -54,9 +54,6 @@ class User(AbstractUser):
         verbose_name = 'User'
         verbose_name_plural = 'Users'
 
-    def __str__(self):
-        return self.username
-
     def save(self, *args, **kwargs):
         """Override save to set user_type for admin users"""
         if self.is_staff:
@@ -106,6 +103,10 @@ class User(AbstractUser):
 
     def user_registration_completed(self):
         return getattr(self, 'user_registration_otp', False) and self.user_registration_otp.is_verified
+
+    def __str__(self):
+        name = self.get_full_name() or self.username or str(self.phone_number)
+        return f"User #{self.id} - {name} ({self.user_type})"
 
 
 class UserRegistrationOTP(models.Model):
