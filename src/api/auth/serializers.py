@@ -78,17 +78,23 @@ class CustomLoginSerializer(serializers.Serializer, ValidationMixin):
 
 
 class CustomRegisterSerializer(serializers.Serializer):
-    """Custom serializer for user registration with phone number and password."""
+    """Custom serializer for user registration with username, phone number, and password."""
 
+    username = serializers.CharField(max_length=150, required=True)
     phone_number = serializers.CharField(max_length=15, required=True)
     password1 = serializers.CharField(write_only=True, min_length=8, required=True)
     password2 = serializers.CharField(write_only=True, min_length=8, required=True)
+
+    def validate_username(self, value):
+        """Ensure username is unique."""
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
 
     def validate_phone_number(self, value):
         """Validate unique phone number and phone number format."""
         if User.objects.filter(phone_number=value).exists():
             raise serializers.ValidationError("This phone number is already registered.")
-
         if not re.match(r'^\+\d{10,15}$', value):
             raise serializers.ValidationError(
                 "Phone number must start with '+' followed by 10 to 15 digits (including country code)."
@@ -106,22 +112,28 @@ class CustomRegisterSerializer(serializers.Serializer):
         message = client.messages.create(
             body=f"Your verification code is: {verification_key}",
             from_=settings.TWILIO_PHONE_NUMBER,
-            to=str(to_number)  # Convert to string here
+            to=str(to_number)
         )
         return message.sid
 
     def create(self, validated_data):
         """Create the user using Django's password hashing mechanism."""
-        phone_number = self.validated_data['phone_number']
-        user = User(
-            phone_number=phone_number
-        )
-        user.set_password(validated_data['password1'])
+        username = validated_data['username']
+        phone_number = validated_data['phone_number']
+        password = validated_data['password1']
+
+        user = User(username=username, phone_number=phone_number)
+        user.set_password(password)
         user.save()
+
+        # Generate and save OTP
         otp = str(random.randint(100000, 999999))
         expires_at = timezone.now() + timezone.timedelta(minutes=10)
         UserRegistrationOTP.objects.create(user=user, otp_code=otp, expires_at=expires_at)
-        self.send_sms(user.phone_number, otp)
+
+        # Send OTP via SMS
+        self.send_sms(phone_number, otp)
+
         return user
 
 
