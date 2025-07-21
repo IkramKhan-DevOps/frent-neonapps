@@ -105,7 +105,8 @@ class User(AbstractUser):
         return getattr(self, 'user_registration_otp', False) and self.user_registration_otp.is_verified
 
     def __str__(self):
-        name = self.get_full_name() or self.username or str(self.phone_number)
+        name = self.get_full_name() or self.username or self.phone_number
+        name = str(name) if name else "Unknown"
         return f"User #{self.id} - {name} ({self.user_type})"
 
 
