@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from src.apps.stripe.notifier import notify_transfer_created
 
-stripe.api_key = "sk_test_51LC794Js59MkLRK8jKm97MecFP4dwcOrxfetIXefvByCaodNGQ1qNdKqaxVBZGD1aW9VTBh69W73T1Ox7LtByRpy00nRXonBff"
+stripe.api_key = "sk_test_51PjMYGFGvQjOhg5Ur89Akp6vvXPEijMW4rf2VJ1Pf6aUa6WQESBtrBeJXtVJtzIf9AdA1aTb0VxAmmO8lhhWmndK00VFrjDrbD"
 
 """ STRIPE CONNECT ------------------------------------------------------------------------------------------------- """
 """ CONNECT API CALLS """
