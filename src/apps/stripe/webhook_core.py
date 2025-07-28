@@ -1,7 +1,7 @@
 import stripe
 from django.http import HttpResponse
 
-STRIPE_WEBHOOK_SECRET = "whsec_A168vgnX9ueWuUhlubPnGotFYZZhljU6"
+STRIPE_WEBHOOK_SECRET = "whsec_r513JxZOoONEN5nedblCPT5SePqLcjWG"
 from src.apps.stripe.webhooks_bll import (
     webhook_account_updated, webhook_transfer_updated, webhook_subscription_created,
     webhook_subscription_deleted, webhook_subscription_updated, webhook_payout_created, webhook_payout_status_change,
