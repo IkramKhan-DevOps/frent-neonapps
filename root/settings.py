@@ -101,7 +101,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
+    # "allauth.account.middleware.AccountMiddleware",
 ]
 
 # settings.py
@@ -300,6 +300,48 @@ else:
     STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')
 
 """       CKEDITOR SETUP --------------------------------------------------------------------------------"""
+
+SOCIALACCOUNT_PROVIDERS = {
+
+    'google': {
+        'APP': {
+            'client_id': '233111883476-jp239eerut8kkt4iavu9pab1ukm2fk61.apps.googleusercontent.com',
+            'secret': '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',
+            'key': '',  # Leave blank for Google
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+    },
+
+    "apple": {
+        "APP": {
+            # Your service identifier
+            "client_id": " com.frent.app",
+
+            # The Key ID (visible in the "View Key Details" page)
+            "secret": "PXJLPS84HH",
+
+            # Member ID/App ID Prefix (Team ID)
+            "key": "PXJLPS84HH",
+
+            "team_id": "Z84496AYUH",  # Ensure this is correctly set
+
+            # Certificate key
+            "certificate_key": """-----BEGIN PRIVATE KEY-----
+    MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgz/rpBHMlgYlr31pm
+    JAH3COaRnU5q29qTdxupqvt3TKagCgYIKoZIzj0DAQehRANCAAS4epYl0Rx5m1+T
+    JZCJy28Cvo+1Oj/khLqGiUzvXutSTlkyd8qXU0KQQK6j/msTS+dhUOh6cuuNu1F+
+    l0eOhn8F
+    -----END PRIVATE KEY-----"""
+        }
+    }
+}
+
 """ DJANGO-CKEDITOR-5 """
 customColorPalette = [
     {

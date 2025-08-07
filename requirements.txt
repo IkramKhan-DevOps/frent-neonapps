@@ -8,12 +8,12 @@ DateTime
 django
 django-environ
 django-filter
-django-allauth
+django-allauth==0.55.0
 django-resized
 python-decouple
 django-crispy-forms
 djangorestframework
-dj-rest-auth
+dj-rest-auth==5.1.0
 requests
 crispy-bootstrap5
 django-browser-reload

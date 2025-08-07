@@ -25,11 +25,9 @@ urlpatterns += [
 urlpatterns += [
     path('', include('src.services.users.urls', namespace='users')),
     path('', include('src.services.services.urls', namespace='services')),
-
     path('', include('src.services.finance.urls', namespace='finance')),
     path('', include('src.services.dashboard.urls', namespace='dashboard')),
     path('', include('src.services.order.urls', namespace='order')),
-
     path('', include('src.apps.stripe.urls', namespace='stripe')),
     path('fcm/', include('src.apps.whisper.fcm.urls', namespace='fcm')),
 

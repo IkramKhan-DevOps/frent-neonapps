@@ -18,7 +18,6 @@ urlpatterns = [
     path('password/change/', PasswordChangeView.as_view(), name='rest_password_change'),
     path('password/reset/', PasswordResetView.as_view(), name='rest_password_reset'),
     re_path(r'^password/reset/confirm/$', PasswordResetConfirmView.as_view(), name='rest_password_reset_confirm'),
-    path('registration/', CustomRegisterView.as_view(), name='register_user'),
     path('registration/verify-otp/', VerifyOTPView.as_view(), name='rest_verify_otp'),
     path('registration/resend-code/', ResendVerificationCodeView.as_view(), name="rest_resend_email"),
     path('deactivate/', DeactivateUserAPIView.as_view(), name='deactivate'),
